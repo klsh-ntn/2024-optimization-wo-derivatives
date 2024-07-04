@@ -1,0 +1,230 @@
+% arara: xelatex: {shell: yes}
+% %arara: biber
+% %arara: xelatex: {shell: yes}
+% %arara: xelatex: {shell: yes}
+
+\documentclass[12pt]{article}
+\usepackage{libertine}
+
+\usepackage{hyperref} % гиперссылки
+
+\usepackage{tikz} % картинки в tikz
+\usetikzlibrary{arrows.meta} % tikz-прибамбас для рисовки стрелочек подлиннее
+
+\usepackage{microtype} % свешивание пунктуации
+
+\usepackage{array} % для столбцов фиксированной ширины
+
+\usepackage{indentfirst} % отступ в первом параграфе
+
+\usepackage{sectsty} % для центрирования названий частей
+\allsectionsfont{\centering}
+
+\usepackage{amsmath} % куча стандартных математических плюшек
+\usepackage{amssymb} % символы
+\usepackage{amsthm} % теоремки
+\usepackage{mathtools}
+
+\usepackage{comment} % добавление длинных комментариев
+
+\usepackage[top=2cm, left=1.2cm, right=1.2cm, bottom=2cm]{geometry} % размер текста на странице
+
+\usepackage{lastpage} % чтобы узнать номер последней страницы
+
+\usepackage{enumitem} % дополнительные плюшки для списков
+%  например \begin{enumerate}[resume] позволяет продолжить нумерацию в новом списке
+
+\usepackage{caption} % что-то делает с подписями рисунков :)
+
+% \usepackage{qcircuit} % для рисовки квантовых диаграмм
+% \usepackage{physics} % бракеты
+
+\usepackage{answers} % разделение условий и ответов в упражнениях
+
+
+\usepackage{fancyhdr} % весёлые колонтитулы
+\pagestyle{fancy}
+\lhead{Оптимизация без производных}
+\chead{}
+\rhead{КЛШ-2024 (47 сезон)}
+\lfoot{}
+\cfoot{}
+\rfoot{\thepage/\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+
+
+\usepackage{todonotes} % для вставки в документ заметок о том, что осталось сделать
+% \todo{Здесь надо коэффициенты исправить}
+% \missingfigure{Здесь будет Последний день Помпеи}
+% \listoftodos — печатает все поставленные \todo'шки
+
+
+
+\usepackage{booktabs} % красивые таблицы
+% заповеди из докупентации:
+% 1. Не используйте вертикальные линни
+% 2. Не используйте двойные линии
+% 3. Единицы измерения - в шапку таблицы
+% 4. Не сокращайте .1 вместо 0.1
+% 5. Повторяющееся значение повторяйте, а не говорите "то же"
+
+
+
+\usepackage{fontspec} % что-то про шрифты?
+\usepackage{polyglossia} % русификация xelatex
+
+\setmainlanguage{russian}
+\setotherlanguages{english}
+
+% download "Linux Libertine" fonts:
+% http://www.linuxlibertine.org/index.php?id=91&L=1
+% \setmainfont{Linux Libertine O} % or Helvetica, Arial, Cambria
+% why do we need \newfontfamily:
+% http://tex.stackexchange.com/questions/91507/
+% \newfontfamily{\cyrillicfonttt}{Linux Libertine O}
+
+\AddEnumerateCounter{\asbuk}{\russian@alph}{щ} % для списков с русскими буквами
+\setlist[enumerate, 2]{label=\asbuk*),ref=\asbuk*}
+
+%% эконометрические сокращения
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Arg}{Arg}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\E}{\mathbb{E}}
+
+\let\P\relax
+\DeclareMathOperator{\P}{\mathbb{P}}
+\newcommand{\const}{\mathrm{const}}
+
+\usepackage{multicol}
+
+\usepackage[bibencoding = auto,
+backend = biber,
+sorting = none,
+style=alphabetic]{biblatex}
+
+% \addbibresource{forecast_everything.bib}
+
+
+
+% делаем короче интервал в списках
+\setlength{\itemsep}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+
+
+
+
+\Newassociation{sol}{solution}{solution_file}
+% sol --- имя окружения внутри задач
+% solution --- имя окружения внутри solution_file
+% solution_file --- имя файла в который будет идти запись решений
+% можно изменить далее по ходу
+\Opensolutionfile{solution_file}[all_solutions]
+% в квадратных скобках фактическое имя файла
+
+% магия для автоматических гиперссылок задача-решение
+\newlist{myenum}{enumerate}{3}
+% \newcounter{problem}[chapter] % нумерация задач внутри глав
+\newcounter{problem}[section]
+
+\newenvironment{problem}%
+{%
+\refstepcounter{problem}%
+%  hyperlink to solution
+     \hypertarget{problem:{\thesection.\theproblem}}{} % нумерация внутри глав
+     % \hypertarget{problem:{\theproblem}}{}
+     \Writetofile{solution_file}{\protect\hypertarget{soln:\thesection.\theproblem}{}}
+     %\Writetofile{solution_file}{\protect\hypertarget{soln:\theproblem}{}}
+     \begin{myenum}[label=\bfseries\protect\hyperlink{soln:\thesection.\theproblem}{\thesection.\theproblem},ref=\thesection.\theproblem]
+     % \begin{myenum}[label=\bfseries\protect\hyperlink{soln:\theproblem}{\theproblem},ref=\theproblem]
+     \item%
+    }%
+    {%
+    \end{myenum}}
+% для гиперссылок обратно надо переопределять окружение
+% это происходит непосредственно перед подключением файла с решениями
+
+
+
+\theoremstyle{definition}
+\newtheorem{definition}{Определение}
+
+
+
+\begin{document}
+
+\newcommand{\dayone}{
+AM-GM неравенство
+\[
+\frac{a + b}{2} \geq \sqrt{ab}, \quad \frac{x_1 + x_2 + \ldots + x_n}{n} \geq \sqrt[n]{x_1 \cdot x_2 \cdots x_n}
+\]
+
+\begin{enumerate}
+  \item $xyz \to \max$ при условии $x + y + z = 600$, $x \geq 0$, $y \geq 0$, $z \geq 0$.
+  \item $xy \to \max$ при условии $2x + y = 600$, $x \geq 0$, $y \geq 0$.
+  \item $xy \to \max$ при условии $2x + y = 400$, $x \geq 0$, $y \geq 0$.
+  \item $x^2y \to \max$ при условии $x + y = 300$, $x \geq 0$, $y \geq 0$.
+  \item $x^3y^5 \to \max$ при условии $6x + 7y = 200$, $x \geq 0$, $y \geq 0$.
+  \item $a + b + c \to \min$ при условии $abc = 100$, $a \geq 0$, $b \geq 0$, $c \geq 0$.
+  \item $a^2 + b^2 + c^2 \to \min$ при условии $abc = 100$, $a \geq 0$, $b \geq 0$, $c \geq 0$.
+  \item $ab + bc + ac \to \min$ при условии $abc = 100$, $a \geq 0$, $b \geq 0$, $c \geq 0$.
+  \item $2a + 3b + 4c \to \min$ при условии $abc = 100$, $a \geq 0$, $b \geq 0$, $c \geq 0$.
+  \item $2ab + 3bc + 4ac \to \min$ при условии $abc = 100$, $a \geq 0$, $b \geq 0$, $c \geq 0$.
+  \item $a + b + c \to \min$ при условии $a^2 b^3 c^4 = 100$, $a \geq 0$, $b \geq 0$, $c \geq 0$.
+  \item $7a + 3b + 4c \to \min$ при условии $a^2 b^3 c^4 = 100$, $a \geq 0$, $b \geq 0$, $c \geq 0$.
+ \end{enumerate}
+}
+
+
+
+\newpage
+
+\dayone
+
+\vfill
+
+\dayone
+
+\section{Лог. КЛШ-2024}
+
+\begin{enumerate}
+  \item 
+\end{enumerate}
+
+В теховском файле \verb|\newpage| стоит, чтобы легко было скопировать секцию, для печати двух копий подряд на одном листе.
+Это позволяет экономить бумагу и время при печати :)
+
+\subsection{Плакат}
+
+
+
+
+
+\Closesolutionfile{solution_file}
+
+% для гиперссылок на условия
+% http://tex.stackexchange.com/questions/45415
+\renewenvironment{solution}[1]{%
+         % add some glue
+         \vskip .5cm plus 2cm minus 0.1cm%
+         {\bfseries \hyperlink{problem:#1}{#1.}}%
+}%
+{%
+}%
+
+
+
+\section{Решения}
+\input{all_solutions}
+
+
+\section{Источники мудрости}
+
+\printbibliography[heading=none]
+
+
+\end{document}
